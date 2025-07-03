@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <title>Random GitHub Repository Finder</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+        .search-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .results-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .page-title {
+            color: #2c3e50;
+            font-weight: 300;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .search-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form-control {
+            height: 50px;
+            border-radius: 25px;
+            border: 2px solid #e1e8ed;
+            padding: 0 20px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-search {
+            height: 50px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        .repo-details {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .repo-name {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .repo-description {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .repo-stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            flex: 1;
+            text-align: center;
+            min-width: 120px;
+        }
+        .stat-label {
+            display: block;
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            display: block;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .github-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .github-link:hover {
+            background: white;
+            color: #f5576c;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+        .no-results {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+        .github-icon {
+            font-size: 3em;
+            color: #ecf0f1;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="search-card">
+                    <h1 class="page-title">
+                        <span class="glyphicon glyphicon-search" style="color: #667eea;"></span>
+                        Find a Random GitHub Repository
+                    </h1>
+                    
+                    <form action="{{ url_for('main') }}" method="post" class="search-form">
+                        <div class="form-group">
+                            <input type="text" 
+                name="language" 
+                                   class="form-control" 
+                                   placeholder="Enter programming language (e.g., Python, JavaScript, Java)" 
+                                   required>
+                        </div>
+                        <button type="submit" class="btn btn-search">
+                            <span class="glyphicon glyphicon-refresh"></span>
+                            Discover Repository
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                {% if details %}
+                <div class="results-card">
+                    <div class="repo-details">
+                        <div class="repo-name">
+                            <span class="glyphicon glyphicon-folder-open"></span>
+                            {{ details.name }}
+                        </div>
+                        
+                        {% if details.description %}
+                        <div class="repo-description">
+                            {{ details.description }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="repo-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Language</span>
+                                <span class="stat-value">{{ details.language or 'Not specified' }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Stars</span>
+                                <span class="stat-value">
+                                    <span class="glyphicon glyphicon-star"></span>
+                                    {{ details.stars }}
+                                </span>
+                            </div>
+                        </div>
+
+                            <div class="text-center">
+                                <a href="{{ details.url }}" target="_blank" class="github-link">
+                                    <span class="glyphicon glyphicon-new-window"></span>
+                                    View on GitHub
+                                </a>
+                                <form action="{{ url_for('find_another') }}" method="post" style="display: inline-block; margin-left: 15px;">
+                                    <input type="hidden" name="language" value="{{ details.language }}">
+                                    <button type="submit" class="github-link" style="border: none; cursor: pointer;">
+                                        <span class="glyphicon glyphicon-refresh"></span>
+                                        Find Another {{ details.language }} Repo
+                                    </button>
+                                </form>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                <div class="results-card">
+                    <div class="no-results">
+                        <div class="github-icon">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>
+                        </div>
+                        <h3>No repository found</h3>
+                        <p>Please try again with a different programming language.</p>
+                        <small>Try popular languages like: Python, JavaScript, Java, C++, Go, Rust</small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
